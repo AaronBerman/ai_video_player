@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TKS: Broker to Encoder Pipeline</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --surface-2: #0f3460;
+            --text: #e0e0e0;
+            --text-muted: #a0a0b0;
+            --accent: #00adb5;
+            --accent-light: #00fff5;
+            --border: #2a2a4a;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--accent-light);
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .callout {
+            background: var(--surface-2);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout.warning {
+            border-left-color: var(--warning);
+        }
+
+        .callout strong {
+            color: var(--accent-light);
+        }
+
+        .callout.warning strong {
+            color: var(--warning);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--surface-2);
+            color: var(--accent-light);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover td {
+            background: rgba(0, 173, 181, 0.05);
+        }
+
+        code {
+            background: var(--surface-2);
+            color: var(--accent-light);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+        }
+
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text);
+        }
+
+        .diagram-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        ul, ol {
+            margin: 0.75rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        .metric-healthy {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .metric-alert {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-broker {
+            background: rgba(0, 173, 181, 0.2);
+            color: var(--accent-light);
+        }
+
+        .badge-encoder {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Technical Knowledge Share: Broker to Encoder Pipeline</h1>
+        <p class="subtitle">Uplynk Ingest Pipeline — Transcoding Workflow Deep Dive</p>
+
+        <!-- OVERVIEW -->
+        <div class="section">
+            <h2>Overview</h2>
+            <p>This TKS covers the Broker-to-Encoder segment of the Uplynk ingest pipeline — the core transcoding workflow that takes source video slices and produces multi-bitrate segments for adaptive playback.</p>
+            <p>The Slicer encodes only the <strong>top bitrate</strong>. Everything below the top bitrate is the Broker and Encoder's job.</p>
+        </div>
+
+        <!-- HIGH LEVEL FLOW -->
+        <div class="section">
+            <h2>Context: Where Broker → Encoder Fits</h2>
+            <div class="diagram-container">
+                <pre class="mermaid">
+flowchart LR
+    SV[Source Video] --> SL[Slicer]
+    SL -->|Top bitrate slice| BR[Broker]
+    BR -->|Distribute slices| EN[Encoder]
+    EN -->|Transcoded slices| S3[Storage - S3]
+    EN -->|Metadata| MDB[(MongoDB)]
+    EN -->|Success/Failure| BR
+    BR -->|ACK| SL
+                </pre>
+            </div>
+            <div class="callout warning">
+                <strong>Important:</strong> This is NOT the only ingest path. Dasher bypasses Broker and Encoder entirely, uploading directly to S3 (one Dasher instance per bitrate). This TKS focuses exclusively on the Broker → Encoder path.
+            </div>
+        </div>
+
+        <!-- COMPONENT RESPONSIBILITIES -->
+        <div class="section">
+            <h2>Component Responsibilities</h2>
+
+            <h3><span class="badge badge-broker">Broker</span> Responsibilities</h3>
+            <table>
+                <thead>
+                    <tr><th>Responsibility</th><th>Detail</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Receive slices</td><td>Accepts top-bitrate slices from one or more Slicers</td></tr>
+                    <tr><td>Distribute work</td><td>Fans out slices to available Encoders for lower-bitrate transcoding</td></tr>
+                    <tr><td>Track completion</td><td>Monitors Encoder success/failure per slice</td></tr>
+                    <tr><td>Retry on failure</td><td>If an Encoder fails or doesn't respond, retries with a different Encoder</td></tr>
+                    <tr><td>Notify Slicer</td><td>On successful encode of all bitrates, ACKs back to Slicer</td></tr>
+                </tbody>
+            </table>
+
+            <h3><span class="badge badge-encoder">Encoder</span> Responsibilities</h3>
+            <table>
+                <thead>
+                    <tr><th>Responsibility</th><th>Detail</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Receive slices</td><td>Accepts slices from exactly one Broker via WebSocket</td></tr>
+                    <tr><td>Transcode</td><td>Encodes slice into target lower bitrates (.ts / .m4s) per the Encoding Profile</td></tr>
+                    <tr><td>Upload to S3</td><td>Stores transcoded slices in the nearest regional S3 bucket</td></tr>
+                    <tr><td>Report back</td><td>Signals success or failure to the Broker</td></tr>
+                    <tr><td>Retry storage</td><td>On S3 upload failure, retries in other regions before reporting failure</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- COMMUNICATION FLOW -->
+        <div class="section">
+            <h2>Communication Flow</h2>
+            <div class="diagram-container">
+                <pre class="mermaid">
+sequenceDiagram
+    participant SL as Slicer
+    participant BR as Broker
+    participant EN as Encoder
+    participant S3 as S3 Storage
+    participant DB as MongoDB
+
+    SL->>BR: Upload top-bitrate slice
+    BR->>BR: Queue slice for transcoding
+    BR->>EN: Distribute slice (WebSocket)
+    EN->>EN: Transcode to lower bitrates
+    EN->>S3: Upload transcoded slices
+    S3-->>EN: Upload ACK
+    EN->>DB: Write slice metadata (beams collection)
+    EN-->>BR: Report success
+    BR-->>SL: ACK slice complete
+                </pre>
+            </div>
+
+            <h3>Failure Scenarios</h3>
+            <div class="diagram-container">
+                <pre class="mermaid">
+sequenceDiagram
+    participant BR as Broker
+    participant EN1 as Encoder A
+    participant EN2 as Encoder B
+    participant S3 as S3 (Region 1)
+    participant S3B as S3 (Region 2)
+
+    BR->>EN1: Distribute slice
+    EN1->>S3: Upload attempt
+    S3--xEN1: Upload failure
+    EN1->>S3B: Retry different region
+    S3B-->>EN1: Upload ACK
+    EN1-->>BR: Success
+
+    Note over BR,EN2: Alternative: Encoder unresponsive
+    BR->>EN1: Distribute slice
+    EN1--xBR: No response / timeout
+    BR->>EN2: Retry with different Encoder
+    EN2-->>BR: Success
+                </pre>
+            </div>
+        </div>
+
+        <!-- CONNECTION MODEL -->
+        <div class="section">
+            <h2>Connection Model</h2>
+            <div class="diagram-container">
+                <pre class="mermaid">
+flowchart TD
+    subgraph Slicers
+        S1[Slicer 1]
+        S2[Slicer 2]
+        S3S[Slicer 3]
+    end
+
+    subgraph Broker Zone
+        BR[Broker]
+    end
+
+    subgraph Encoder Pool
+        E1[Encoder 1]
+        E2[Encoder 2]
+        E3[Encoder 3]
+        E4[Encoder 4]
+    end
+
+    S1 -->|HTTPS| BR
+    S2 -->|HTTPS| BR
+    S3S -->|HTTPS| BR
+    BR -->|WebSocket| E1
+    BR -->|WebSocket| E2
+    BR -->|WebSocket| E3
+    BR -->|WebSocket| E4
+                </pre>
+            </div>
+            <ul>
+                <li><strong>Many Slicers → One Broker:</strong> Multiple slicers connect to a single broker</li>
+                <li><strong>One Broker → Many Encoders:</strong> Broker distributes across a pool of encoders via WebSocket</li>
+                <li><strong>Each Encoder connects to exactly one Broker</strong> at a time</li>
+                <li>Encoders are scaled by the <code>encoder</code> autoscaler type per zone</li>
+            </ul>
+        </div>
+
+        <!-- KEY METRICS -->
+        <div class="section">
+            <h2>Key Metrics to Monitor</h2>
+            <table>
+                <thead>
+                    <tr><th>Metric</th><th>What It Tells You</th><th>Healthy Value</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>broker_maxage_live</code></td><td>Time from Broker receiving slice → Encoder completion</td><td class="metric-healthy">&lt; 10s</td></tr>
+                    <tr><td><code>broker_debugCreationLiveMax</code></td><td>End-to-end: Slicer encode + upload + broker_maxage_live</td><td class="metric-healthy">&lt; 15s</td></tr>
+                    <tr><td><code>broker_beam_ready_total</code></td><td>Active slicer connections</td><td class="metric-healthy">Stable (drops = disconnect)</td></tr>
+                    <tr><td><code>broker_encoder_websocket_connection_dropped_count_total</code></td><td>WebSocket drops between Broker and Encoder</td><td class="metric-healthy">0</td></tr>
+                    <tr><td><code>broker_transcode_errors_total</code></td><td>Encoder transcode failures</td><td class="metric-healthy">0</td></tr>
+                    <tr><td><code>broker_upload_failures_total</code></td><td>Encoder → S3 upload failures</td><td class="metric-healthy">0</td></tr>
+                    <tr><td><code>broker_enc_busy</code></td><td>Number of busy encoders</td><td>Compare to <code>broker_encoders</code></td></tr>
+                    <tr><td><code>broker_encoders</code></td><td>Total available encoders in pool</td><td>Baseline varies by zone</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DIAGNOSTIC FLOWCHART -->
+        <div class="section">
+            <h2>Diagnosing Issues: Slicer-Side vs Platform-Side</h2>
+            <div class="diagram-container">
+                <pre class="mermaid">
+flowchart TD
+    A[Elevated broker_debugCreationLiveMax?] -->|Yes| B{broker_maxage_live also elevated?}
+    B -->|Yes| C[Platform-side issue]
+    B -->|No| D[Slicer-side issue]
+    C --> C1[Broker/Encoder backlog]
+    C --> C2[Storage write failure]
+    C --> C3[Encoder impairment]
+    D --> D1[Slow slicer encode]
+    D --> D2[Network issue uploading to Broker]
+    D --> D3[Slicer host resource exhaustion]
+                </pre>
+            </div>
+            <div class="callout">
+                <strong>Key insight:</strong> <code>broker_maxage_live</code> is platform-side only (Broker receives → Encoder completes). <code>broker_debugCreationLiveMax</code> is end-to-end including slicer time. If only debugCreationLiveMax is elevated but maxage_live is normal → the delay is on the slicer side.
+            </div>
+        </div>
+
+        <!-- AUTOSCALING -->
+        <div class="section">
+            <h2>Autoscaling</h2>
+            <p>Both Brokers and Encoders are managed by the Uplynk autoscaler system.</p>
+            <table>
+                <thead>
+                    <tr><th>Autoscaler Type</th><th>What It Scales</th><th>Pipeline</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>broker</code></td><td>Ingest brokers</td><td>Ingest</td></tr>
+                    <tr><td><code>encoder</code></td><td>Transcode workers</td><td>Ingest</td></tr>
+                    <tr><td><code>slicer</code></td><td>Cloud Slicer workers</td><td>Ingest</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Impairment PromQL Queries</h3>
+            <pre><code># Currently impaired encoders by zone
+sum by (ulscalerzone) (autoscaler_scaler_impaired_servers2{ulscalertype="encoder"})
+
+# New encoder impairment events
+sum by (ulscalerzone) (increase(autoscaler_scaler_impaired_server_stopping_total{ulscalertype="encoder"}[15m]))</code></pre>
+        </div>
+
+        <!-- STORAGE WRITE PATH -->
+        <div class="section">
+            <h2>Storage Write Path</h2>
+            <p>Encoders write transcoded slices to S3 with this logic:</p>
+            <ol>
+                <li>Write to <strong>nearest regional S3 bucket</strong> (same region as the encoder)</li>
+                <li>On failure → retry in a <strong>different S3 region</strong></li>
+                <li>On all-region failure → report failure back to Broker</li>
+                <li>Each slice is stored in <strong>exactly one region</strong> (no replication)</li>
+            </ol>
+            <p>Available S3 regions: <code>us-east-1</code>, <code>us-east-2</code>, <code>us-west-2</code>, <code>eu-central-1</code>, <code>ap-south-1</code>, <code>ap-southeast-1</code>, <code>sa-east-1</code></p>
+        </div>
+
+        <!-- COMMON FAILURE PATTERNS -->
+        <div class="section">
+            <h2>Common Failure Patterns</h2>
+            <table>
+                <thead>
+                    <tr><th>Symptom</th><th>Likely Cause</th><th>Investigation</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>broker_maxage_live</code> spikes across all zones</td>
+                        <td>Encoder capacity issue or S3 regional outage</td>
+                        <td>Check <code>broker_enc_busy</code> vs <code>broker_encoders</code>, check impairment metrics</td>
+                    </tr>
+                    <tr>
+                        <td><code>broker_maxage_live</code> spike in single zone</td>
+                        <td>Zone-specific encoder impairment</td>
+                        <td>Check <code>autoscaler_scaler_impaired_servers2{ulscalertype="encoder", ulscalerzone="..."}</code></td>
+                    </tr>
+                    <tr>
+                        <td>WebSocket drops increasing</td>
+                        <td>Network instability between Broker and Encoder instances</td>
+                        <td>Check zone health, recent deploys</td>
+                    </tr>
+                    <tr>
+                        <td><code>broker_transcode_errors_total</code> rising</td>
+                        <td>Encoder software bug or bad input slices</td>
+                        <td>Check encoder logs, correlate with recent deploys</td>
+                    </tr>
+                    <tr>
+                        <td><code>broker_upload_failures_total</code> rising</td>
+                        <td>S3 availability issue</td>
+                        <td>Check CloudWatch S3 metrics, check if retries to other regions succeed</td>
+                    </tr>
+                    <tr>
+                        <td><code>broker_beam_ready_total</code> dropping</td>
+                        <td>Slicers disconnecting from Broker</td>
+                        <td>Slicer-side or Services API issue (broker discovery)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- KEY TAKEAWAYS -->
+        <div class="section">
+            <h2>Key Takeaways</h2>
+            <ol>
+                <li><strong>Broker is the orchestrator</strong> — it doesn't transcode, it distributes and tracks</li>
+                <li><strong>Encoder is the workhorse</strong> — transcode + upload + report back</li>
+                <li><strong>WebSocket is the connection</strong> between Broker and Encoder (fragile to network issues)</li>
+                <li><strong>Retry logic exists at every hop</strong> — Broker retries encoders, Encoders retry S3 regions</li>
+                <li><strong><code>broker_maxage_live</code> is your primary signal</strong> for platform-side ingest health</li>
+                <li><strong>Not all ingest goes through this path</strong> — Dasher is the exception</li>
+            </ol>
+        </div>
+
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            }
+        });
+    </script>
+</body>
+</html>

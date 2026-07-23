@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OpenVideo Player — User Guide</title>
+  <link rel="stylesheet" href="./styles/player.css">
+  <style>
+    .guide-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      line-height: 1.7;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .guide-container h1 { margin-bottom: 0.25rem; }
+    .guide-container h2 {
+      margin-top: 2.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid #ddd;
+    }
+    .guide-container h3 { margin-top: 1.5rem; }
+    .guide-container code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .guide-container pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .guide-container table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .guide-container th, .guide-container td {
+      border: 1px solid #ddd;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    .guide-container th { background: #f9f9f9; }
+    .guide-container .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      color: #2196f3;
+      text-decoration: none;
+    }
+    .guide-container .back-link:hover { text-decoration: underline; }
+    .guide-container .tip {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .guide-container .warning {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-bar">
+    <h1>OpenVideo Player</h1>
+    <div id="theme-buttons">
+      <button data-theme="light">Light</button>
+      <button data-theme="dark">Dark</button>
+      <button data-theme="sepia">Sepia</button>
+    </div>
+  </div>
+
+  <div class="guide-container">
+    <a href="index.html" class="back-link">← Back to Player</a>
+
+    <h1>User Guide</h1>
+    <p>A complete guide to using the OpenVideo Player — loading streams, configuring DRM, casting, and using diagnostics.</p>
+
+    <!-- ─── Getting Started ─────────────────────────────── -->
+
+    <h2>Getting Started</h2>
+    <p>Open <code>index.html</code> in any modern browser. No installation needed — just serve the folder with any static file server:</p>
+    <pre>python3 -m http.server 8000
+# or
+npx serve .</pre>
+    <p>Then navigate to <code>http://localhost:8000</code>.</p>
+
+    <!-- ─── Loading Streams ─────────────────────────────── -->
+
+    <h2>Loading a Stream</h2>
+    <p>Enter a video URL in the <strong>Video URL</strong> input field and click <strong>Load Video</strong>. The player auto-detects the stream type:</p>
+    <table>
+      <tr><th>URL Ending</th><th>Protocol</th><th>Library Used</th></tr>
+      <tr><td><code>.m3u8</code></td><td>HLS</td><td>hls.js</td></tr>
+      <tr><td><code>.mpd</code></td><td>DASH</td><td>dash.js</td></tr>
+      <tr><td>Other (e.g. <code>.mp4</code>)</td><td>Native</td><td>Browser built-in</td></tr>
+    </table>
+
+    <div class="tip">
+      <strong>Tip:</strong> You can append query parameters to the URL (e.g., auth tokens). The player will pass them through to the stream request.
+    </div>
+
+    <!-- ─── Playback Controls ───────────────────────────── -->
+
+    <h2>Playback Controls</h2>
+    <p>The custom control bar appears when you hover over the video:</p>
+    <table>
+      <tr><th>Button</th><th>Action</th></tr>
+      <tr><td>▶ / ⏸</td><td>Play / Pause</td></tr>
+      <tr><td>🔊 / 🔇</td><td>Mute / Unmute</td></tr>
+      <tr><td>Volume slider</td><td>Adjust volume</td></tr>
+      <tr><td>CC</td><td>Audio tracks and subtitles</td></tr>
+      <tr><td>1x / 1.5x / etc.</td><td>Playback speed</td></tr>
+      <tr><td>⛶</td><td>Toggle fullscreen</td></tr>
+    </table>
+
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><th>Key</th><th>Action</th></tr>
+      <tr><td><code>Space</code> / <code>K</code></td><td>Play / Pause</td></tr>
+      <tr><td><code>F</code></td><td>Toggle fullscreen</td></tr>
+      <tr><td><code>M</code></td><td>Toggle mute</td></tr>
+      <tr><td><code>S</code></td><td>Cycle playback speed</td></tr>
+      <tr><td><code>←</code> / <code>→</code></td><td>Seek ±5 seconds</td></tr>
+      <tr><td><code>J</code> / <code>L</code></td><td>Seek ±10 seconds</td></tr>
+      <tr><td><code>↑</code> / <code>↓</code></td><td>Volume up / down</td></tr>
+      <tr><td><code>0</code> / <code>Home</code></td><td>Restart from beginning</td></tr>
+    </table>
+    <p>Shortcuts are disabled when an input field has focus.</p>
+
+    <!-- ─── Skins & Themes ──────────────────────────────── -->
+
+    <h2>Skins and Themes</h2>
+    <h3>Player Skins</h3>
+    <p>Use the <strong>Select Skin</strong> dropdown to change the player's visual style. Available skins: Modern, Light, Dark, Minimal, Cinema, Rounded, High Contrast, Retro, and Default.</p>
+
+    <h3>Page Themes</h3>
+    <p>The theme buttons in the header switch the entire page between Light, Dark, and Sepia color schemes.</p>
+
+    <!-- ─── DRM ─────────────────────────────────────────── -->
+
+    <h2>DRM (Content Protection)</h2>
+    <p>To play encrypted streams, configure the DRM license servers in the <strong>DRM Configuration</strong> panel:</p>
+    <ol>
+      <li>Enter the license server URL for your DRM system (Widevine, PlayReady, or FairPlay)</li>
+      <li>For FairPlay, also enter the certificate URL</li>
+      <li>Click <strong>Apply DRM Config</strong></li>
+      <li>Load your encrypted stream URL</li>
+    </ol>
+
+    <table>
+      <tr><th>DRM System</th><th>Supported Browsers</th></tr>
+      <tr><td>Widevine</td><td>Chrome, Firefox, Edge, Android browsers</td></tr>
+      <tr><td>PlayReady</td><td>Edge, IE11</td></tr>
+      <tr><td>FairPlay</td><td>Safari, iOS Safari</td></tr>
+    </table>
+
+    <div class="tip">
+      <strong>Tip:</strong> Most browsers support at least one DRM system. Chrome + Widevine is the most common combination for testing.
+    </div>
+
+    <div class="warning">
+      <strong>Note:</strong> DRM requires HTTPS in production. For local testing, <code>localhost</code> is treated as a secure context by most browsers.
+    </div>
+
+    <!-- ─── QR Code ─────────────────────────────────────── -->
+
+    <h2>QR Code (Stream URL Sharing)</h2>
+    <p>Click the <strong>Show QR Code</strong> button to display a scannable QR code overlaid on the player. The QR code contains the current stream URL.</p>
+
+    <h3>How to Use</h3>
+    <ol>
+      <li>Load a stream in the player</li>
+      <li>Click <strong>Show QR Code</strong> in the control panel</li>
+      <li>Point your phone's camera at the QR code</li>
+      <li>Your phone will show the stream URL — tap to open or copy it</li>
+    </ol>
+    <p>This is useful for quickly transferring an ingest URL to a mobile device for testing or sharing with colleagues.</p>
+
+    <!-- ─── Casting ─────────────────────────────────────── -->
+
+    <h2>Casting (Chromecast &amp; Fire TV)</h2>
+    <p>When a cast-compatible device is detected on your network, a cast icon appears in the player's control bar.</p>
+    <ol>
+      <li>Click the cast icon</li>
+      <li>Select your device from Chrome's native picker</li>
+      <li>The stream will begin playing on the remote device</li>
+      <li>Click the cast icon again to stop casting</li>
+    </ol>
+
+    <div class="warning">
+      <strong>Requirements:</strong> Casting requires Google Chrome. The cast device and browser must be on the same network. The stream URL must be accessible from the cast device (not <code>localhost</code>).
+    </div>
+
+    <h3>Fire TV</h3>
+    <p>Fire TV devices can appear as cast targets if they have a DIAL-compatible receiver app installed (e.g., AirReceiver or Web Video Caster).</p>
+
+    <!-- ─── CMCD ────────────────────────────────────────── -->
+
+    <h2>CMCD (Client Metrics)</h2>
+    <p>The player automatically sends Common Media Client Data (CTA-5004) with each media request. This helps CDNs make better delivery decisions.</p>
+    <p>CMCD is enabled by default and transmits metrics like buffer length, bitrate, throughput, and session ID as query parameters on segment requests.</p>
+
+    <!-- ─── Diagnostics ─────────────────────────────────── -->
+
+    <h2>Diagnostics</h2>
+
+    <h3>Stats Overlay</h3>
+    <p>Click the <strong>⚙ Stats</strong> button on the video to show a real-time overlay with bitrate, resolution, codec, buffer length, dropped frames, and live latency.</p>
+
+    <h3>Session Log</h3>
+    <p>The Session Log panel shows a timestamped history of all player events: play, pause, seek, quality switches, errors, and recovery attempts.</p>
+
+    <h3>Network Requests</h3>
+    <p>The Network Requests panel logs each segment fetch with download speed, file name, and timing. Useful for spotting slow segments or CDN issues.</p>
+
+    <h3>Buffer Health</h3>
+    <p>The buffer bar shows how much video is buffered ahead. It turns orange below 3 seconds and red when critically low.</p>
+
+    <!-- ─── Troubleshooting ─────────────────────────────── -->
+
+    <h2>Troubleshooting</h2>
+
+    <h3>Stream won't play</h3>
+    <ul>
+      <li>Check the browser console for errors</li>
+      <li>Verify the URL is accessible (try opening it directly in a new tab)</li>
+      <li>For CORS issues, ensure your CDN sends proper <code>Access-Control-Allow-Origin</code> headers</li>
+      <li>For DRM streams, confirm the license server URL is correct and reachable</li>
+    </ul>
+
+    <h3>DRM errors</h3>
+    <ul>
+      <li>Ensure you're using HTTPS (or localhost)</li>
+      <li>Check that your browser supports the DRM system (e.g., Safari doesn't support Widevine)</li>
+      <li>Verify the license server is responding (check the Network tab in DevTools)</li>
+    </ul>
+
+    <h3>QR code shows wrong URL</h3>
+    <ul>
+      <li>The QR code shows whatever URL was last loaded. If you typed a new URL but didn't click "Load Video," the QR still shows the previous stream.</li>
+    </ul>
+
+    <h3>Cast icon not appearing</h3>
+    <ul>
+      <li>Casting only works in Google Chrome</li>
+      <li>Ensure the cast device is on the same network</li>
+      <li>Try reloading the page — the Cast SDK sometimes takes a moment to detect devices</li>
+    </ul>
+
+    <br>
+    <a href="index.html" class="back-link">← Back to Player</a>
+  </div>
+
+  <script>
+    // Theme buttons
+    document.getElementById('theme-buttons').addEventListener('click', (e) => {
+      const theme = e.target.dataset.theme;
+      if (theme) {
+        document.body.className = `theme-${theme}`;
+      }
+    });
+  </script>
+</body>
+</html>

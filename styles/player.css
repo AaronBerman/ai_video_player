@@ -1,0 +1,901 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  text-align: center;
+  background-color: #333;
+  color: white;
+  padding: 1rem;
+  font-size: 1.5rem;
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1rem;
+  margin: auto;
+}
+
+#player-container {
+  flex: 1 1 60%;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#player-container video {
+  width: auto;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+#control-panel {
+  flex: 1 1 35%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#video-form input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+#video-form button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  width: 100%;
+}
+
+select {
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: #f9f9f9;
+}
+
+/* Default video appearance */
+video {
+  width: 100%;
+  max-height: 80vh;
+  background-color: #000;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Subtitle fallback style */
+video::cue {
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 0.3em 0.6em;
+  font-size: 1em;
+  text-shadow: 1px 1px 2px #000;
+}
+
+/* Watermark plugin */
+.video-watermark {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  opacity: 0.8;
+  pointer-events: none;
+  font-size: 0.9rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Header bar */
+#header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+/* Theme system */
+:root {
+  --bg-color: #fff;
+  --text-color: #000;
+}
+
+body.theme-light {
+  --bg-color: #fff;
+  --text-color: #000;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.theme-dark {
+  --bg-color: #111;
+  --text-color: #eee;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.theme-sepia {
+  --bg-color: #f4ecd8;
+  --text-color: #5b4636;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#theme-buttons button {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--text-color);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+#theme-buttons button:hover {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+.guide-link {
+  margin-right: 1rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--text-color);
+  border-radius: 4px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.guide-link:hover {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+/* ─── Debug Overlay ─────────────────────────────────────── */
+
+.ovp-debug-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #0f0;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.75rem;
+  padding: 10px 14px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 280px;
+  line-height: 1.6;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.ovp-debug-title {
+  color: #0ff;
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  padding-bottom: 4px;
+}
+
+.ovp-debug-row span {
+  color: #aaa;
+}
+
+/* ─── Session Log Panel ─────────────────────────────────── */
+
+.ovp-session-log {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.ovp-log-entry {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.ovp-log-entry[data-category="error"] {
+  color: #f44336;
+}
+
+.ovp-log-entry[data-category="network"] {
+  color: #ff9800;
+}
+
+.ovp-log-entry[data-category="quality-switch"] {
+  color: #2196f3;
+}
+
+.ovp-log-entry[data-category="buffer-warning"],
+.ovp-log-entry[data-category="buffer-critical"] {
+  color: #ff5722;
+}
+
+.ovp-log-entry[data-category="cmcd-sent"] {
+  color: #9c27b0;
+}
+
+.ovp-log-entry[data-category="cmcd-enabled"],
+.ovp-log-entry[data-category="cmcd-initialized"] {
+  color: #7c4dff;
+}
+
+/* ─── Network Log Panel ─────────────────────────────────── */
+
+.ovp-network-log {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.7rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.ovp-network-entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+.ovp-network-entry .time {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.ovp-network-entry .speed {
+  color: #4caf50;
+  flex-shrink: 0;
+}
+
+.ovp-network-entry .url {
+  color: #aaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Buffer Bar ────────────────────────────────────────── */
+
+.ovp-buffer-bar-container {
+  height: 6px;
+  background: #333;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.ovp-buffer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.ovp-buffer-bar.low {
+  background: linear-gradient(90deg, #ff9800, #f44336);
+}
+
+/* ─── Diagnostics Toggle Button ─────────────────────────── */
+
+.ovp-diag-toggle {
+  position: absolute;
+  top: 10px;
+  right: 50px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  z-index: 101;
+}
+
+.ovp-diag-toggle:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: #0ff;
+  color: #0ff;
+}
+
+/* ─── Loading Spinner ───────────────────────────────────── */
+
+.ovp-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 90;
+}
+
+.ovp-spinner.visible {
+  opacity: 1;
+  animation: ovp-spin 0.8s linear infinite;
+}
+
+@keyframes ovp-spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ─── Error Display ─────────────────────────────────────── */
+
+.ovp-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #f44336;
+  font-size: 0.9rem;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  max-width: 80%;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 95;
+}
+
+.ovp-error.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Custom Control Bar ────────────────────────────────── */
+
+.ovp-control-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 80;
+}
+
+#player-container:hover .ovp-control-bar,
+.ovp-fullscreen .ovp-control-bar {
+  opacity: 1;
+}
+
+.ovp-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.ovp-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ovp-btn:focus-visible {
+  outline: 2px solid #0ff;
+  outline-offset: 2px;
+}
+
+.ovp-volume-slider {
+  width: 70px;
+  height: 4px;
+  cursor: pointer;
+  accent-color: #fff;
+}
+
+.ovp-time {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  white-space: nowrap;
+}
+
+.ovp-spacer {
+  flex: 1;
+}
+
+.ovp-btn-speed {
+  font-size: 0.8rem;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ─── Export Logs Button ────────────────────────────────── */
+
+.ovp-btn-export {
+  font-size: 0.85rem;
+  min-width: 32px;
+  text-align: center;
+  position: relative;
+}
+
+.ovp-btn-export:active {
+  transform: scale(0.9);
+}
+
+/* ─── Tracks Button ─────────────────────────────────────── */
+
+.ovp-btn-tracks {
+  font-size: 0.75rem;
+  font-weight: bold;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Track Menu ────────────────────────────────────────── */
+
+.ovp-track-menu {
+  position: absolute;
+  bottom: 50px;
+  right: 60px;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 160px;
+  max-height: 300px;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 110;
+}
+
+.ovp-track-menu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.ovp-track-section {
+  padding: 4px 0;
+}
+
+.ovp-track-section + .ovp-track-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+.ovp-track-section-title {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 14px 4px;
+}
+
+.ovp-track-option {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 6px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ovp-track-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ovp-track-option.active {
+  color: #4fc3f7;
+}
+
+.ovp-track-option.active::before {
+  content: '✓ ';
+}
+
+/* ─── Cast Button ───────────────────────────────────────── */
+
+.ovp-btn-cast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px;
+}
+
+.ovp-btn-cast svg {
+  transition: color 0.2s;
+}
+
+.ovp-btn-cast.casting {
+  color: #4fc3f7;
+}
+
+.ovp-btn-cast.casting svg {
+  animation: ovp-cast-pulse 2s ease-in-out infinite;
+}
+
+.ovp-btn-cast.unavailable {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+@keyframes ovp-cast-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ─── Cast Status Overlay ───────────────────────────────── */
+
+.ovp-cast-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 95;
+}
+
+.ovp-cast-status.visible {
+  opacity: 1;
+}
+
+/* ─── Fullscreen Mode ───────────────────────────────────── */
+
+.ovp-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  z-index: 9999;
+  border-radius: 0 !important;
+}
+
+.ovp-fullscreen video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
+
+/* ─── Responsive Layout ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+
+  #player-container {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  #control-panel {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .ovp-control-bar {
+    opacity: 1;
+    padding: 6px 8px;
+  }
+
+  .ovp-volume-slider {
+    width: 50px;
+  }
+
+  .ovp-time {
+    font-size: 0.65rem;
+  }
+
+  #header-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  #header-bar h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ovp-volume-slider {
+    display: none;
+  }
+
+  .ovp-btn {
+    padding: 4px 5px;
+    font-size: 1rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+  }
+}
+
+/* ─── Keyboard Shortcut Keys ────────────────────────────── */
+
+kbd {
+  display: inline-block;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.7rem;
+  box-shadow: 0 1px 0 #999;
+  min-width: 18px;
+  text-align: center;
+}
+
+body.theme-dark kbd {
+  background: #333;
+  border-color: #555;
+  color: #eee;
+  box-shadow: 0 1px 0 #000;
+}
+
+/* ─── DRM Configuration Panel ───────────────────────────── */
+
+.ovp-drm-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.ovp-drm-fields label {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.ovp-drm-fields input[type="text"] {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.ovp-drm-fields input[type="text"]:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+}
+
+#drm-apply {
+  padding: 0.5rem 1rem;
+  width: 100%;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#drm-apply:hover {
+  background: #1976d2;
+}
+
+/* ─── QR Code Toggle Button ─────────────────────────────── */
+
+#qr-toggle {
+  padding: 0.5rem 1rem;
+  width: 100%;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#qr-toggle:hover {
+  background: #388e3c;
+}
+
+/* ─── QR Code Overlay ───────────────────────────────────── */
+
+.ovp-qr-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 110;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.ovp-qr-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ovp-qr-canvas {
+  width: 180px;
+  height: 180px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ovp-qr-canvas canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.ovp-qr-url {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #aaa;
+  max-width: 220px;
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.ovp-qr-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.ovp-qr-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Metrics Graphs Panel ──────────────────────────────── */
+
+.ovp-metrics-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ovp-metric-chart {
+  background: rgba(20, 20, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ovp-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.ovp-metric-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ovp-metric-value {
+  font-size: 0.8rem;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-weight: 600;
+}
+
+.ovp-metric-canvas {
+  width: 100%;
+  height: 60px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Theme adjustments */
+body.theme-light .ovp-metric-chart {
+  background: rgba(240, 242, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.theme-light .ovp-metric-label {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+body.theme-light .ovp-metric-canvas {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.theme-sepia .ovp-metric-chart {
+  background: rgba(90, 70, 50, 0.1);
+  border-color: rgba(91, 70, 54, 0.2);
+}
+
+body.theme-sepia .ovp-metric-label {
+  color: rgba(91, 70, 54, 0.6);
+}
+
+body.theme-sepia .ovp-metric-canvas {
+  background: rgba(91, 70, 54, 0.06);
+}
+
+@media (max-width: 768px) {
+  .ovp-metrics-container {
+    grid-template-columns: 1fr;
+  }
+}
